@@ -22,10 +22,11 @@ import adminRoute from './src/router/admin.route.js';
 import { connectdb } from "./src/config/db.js";
 
 const app=express()
+app.set('trust proxy', true)
 app.use(express.json())
-app.use(cors({origin:['http://localhost:3000','http://localhost:3001','http://localhost:3002','https://frontend-mu.vercel.app/'],credentials:true}))
+app.use(cors({origin:['http://localhost:2000','https://semik.phidimservice.com.np'],credentials:true}))
 
-
+app.use(cors({origin:['http://localhost:3000','http://localhost:3001','http://localhost:3002','https://frontend-mu.vercel.app','https://semikdev.com','https://www.semikdev.com','https://semik.phidimservice.com.np'],credentials:true}))
 connectdb()
 
 
@@ -45,6 +46,7 @@ app.use('/admin',adminRoute)
 
 
 
-app.listen(2000,()=>{
-    console.log('server started successfully')
+const PORT = 2000;
+app.listen(PORT, () => {
+    console.log(`server started on port ${PORT}`)
 })
