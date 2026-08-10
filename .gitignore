@@ -1,8 +1,5 @@
-git init
-git add .
-git commit -m "apex"
-git branch -M main
-git remote add origin https://github.com/semik-serma/WebsiteBackend.git
-git push -u origin main
-
 node_modules
+.env
+.env.*
+backups/*.json
+logs/

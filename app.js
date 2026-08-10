@@ -20,6 +20,23 @@ import notificationRoute from './src/router/notification.route.js';
 import heartbeatRoute from './src/router/heartbeat.route.js';
 import adminRoute from './src/router/admin.route.js';
 import { connectdb } from "./src/config/db.js";
+import { scheduleAutoBackup, createBackup } from './src/utils/backupEngine.js';
+
+// --- Crash & Disaster Recovery Shields ---
+process.on('uncaughtException', async (err) => {
+  console.error('💥 [CRASH GUARD] Uncaught Exception intercepted:', err.message, err.stack);
+  try {
+    // Attempt emergency backup snapshot before anything is lost
+    await createBackup('emergency_crash');
+    console.log('🛡️ [CRASH GUARD] Emergency backup snapshot secured.');
+  } catch (backupErr) {
+    console.error('Failed to create emergency backup:', backupErr.message);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.warn('⚠️ [CRASH GUARD] Unhandled Promise Rejection at:', promise, 'reason:', reason);
+});
 
 const app=express()
 app.set('trust proxy', true)
@@ -27,7 +44,13 @@ app.use(express.json())
 app.use(cors({origin:['http://localhost:2000','https://semik.phidimservice.com.np'],credentials:true}))
 
 app.use(cors({origin:['http://localhost:3000','http://localhost:3001','http://localhost:3002','https://frontend-mu.vercel.app','https://semikdev.com','https://www.semikdev.com','https://semik.phidimservice.com.np'],credentials:true}))
-connectdb()
+
+// Connect Database & Start Auto Backup Engine
+connectdb().then(() => {
+  scheduleAutoBackup();
+}).catch((err) => {
+  console.error('Database connection failed:', err);
+});
 
 
 app.use('/auth',route)
