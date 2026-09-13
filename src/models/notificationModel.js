@@ -4,7 +4,7 @@ const notificationSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     type: {
         type: String,
-        enum: ['friend_request', 'friend_accepted', 'new_message', 'reel_shared'],
+        enum: ['friend_request', 'friend_accepted', 'new_message'],
         required: true
     },
     fromUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

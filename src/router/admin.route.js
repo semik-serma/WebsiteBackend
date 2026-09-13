@@ -6,8 +6,6 @@ import {
     getAllUsers,
     deleteUser,
     updateUserRole,
-    getAllReels,
-    deleteReel,
     getAllArticles,
     deleteArticle,
 } from '../controller/admin.controller.js';
@@ -28,8 +26,6 @@ router.get('/users', getAllUsers);
 router.delete('/users/:id', deleteUser);
 router.patch('/users/:id/role', updateUserRole);
 router.put('/users/:id/role', updateUserRole);
-router.get('/reels', getAllReels);
-router.delete('/reels/:id', deleteReel);
 router.get('/articles', getAllArticles);
 router.delete('/articles/:id', deleteArticle);
 

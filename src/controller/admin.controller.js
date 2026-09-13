@@ -1,5 +1,4 @@
 import User from '../models/userModels.js';
-import { Reel } from '../models/reelModel.js';
 import { Article } from '../models/articleModels.js';
 import { Chat } from '../models/chatModel.js';
 import { Message } from '../models/messageModel.js';
@@ -9,10 +8,9 @@ import { Notification } from '../models/notificationModel.js';
 export const getDashboardStats = async (req, res) => {
     try {
         const totalUsers = await User.countDocuments();
-        const totalReels = await Reel.countDocuments();
         const totalArticles = await Article.countDocuments();
         const totalChats = await Chat.countDocuments();
-        res.json({ totalUsers, totalReels, totalArticles, totalChats });
+        res.json({ totalUsers, totalArticles, totalChats });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching stats', error: error.message });
     }
@@ -36,7 +34,6 @@ export const deleteUser = async (req, res) => {
         const user = await User.findById(id);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-        await Reel.deleteMany({ user: id });
         await Article.deleteMany({ author: user.email });
         const chats = await Chat.find({ participants: id });
         const chatIds = chats.map(c => c._id);
@@ -91,26 +88,6 @@ export const updateUserRole = async (req, res) => {
     }
 };
 
-export const getAllReels = async (req, res) => {
-    try {
-        const reels = await Reel.find().populate('user', 'firstname lastname email').sort({ createdAt: -1 });
-        res.json({ reels });
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching reels', error: error.message });
-    }
-};
-
-export const deleteReel = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const reel = await Reel.findByIdAndDelete(id);
-        if (!reel) return res.status(404).json({ success: false, message: 'Reel not found' });
-        res.json({ success: true, message: 'Reel deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error deleting reel', error: error.message });
-    }
-};
-
 export const getAllArticles = async (req, res) => {
     try {
         const articles = await Article.find().sort({ createdAt: -1 });
@@ -130,3 +107,4 @@ export const deleteArticle = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error deleting article', error: error.message });
     }
 };
+

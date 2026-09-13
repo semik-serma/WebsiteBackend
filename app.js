@@ -13,7 +13,6 @@ import { contactroute } from './src/router/contact.route.js';
 import { visitcounter } from './src/controller/visitor.controller.js';
 import { visitorroute } from './src/router/visitor.route.js';
 import { userfelingroute } from './src/router/userfeling.route.js';
-import reelRoute from './src/router/reel.route.js';
 import friendRoute from './src/router/friend.route.js';
 import chatRoute from './src/router/chat.route.js';
 import notificationRoute from './src/router/notification.route.js';
@@ -80,7 +79,6 @@ app.use('/contact',contactroute)
 app.use('/visit',visitorroute)
 app.use('/user',userfelingroute)
 app.use('/heartbeat',heartbeatRoute)
-app.use('/reel',reelRoute)
 app.use('/friend',friendRoute)
 app.use('/chat',chatRoute)
 app.use('/notification',notificationRoute)

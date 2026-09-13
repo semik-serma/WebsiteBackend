@@ -136,3 +136,61 @@ export const deleteArticle = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// ================= LIKE ARTICLE =================
+export const likeArticle = async (req, res) => {
+  try {
+    const { userEmail } = req.body;
+    const identifier = userEmail || req.user?.email || req.ip;
+    const article = await Article.findById(req.params.id);
+    if (!article) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+    const likes = Array.isArray(article.likes) ? article.likes : [];
+    const hasLiked = likes.includes(identifier);
+    let updated;
+    if (hasLiked) {
+      updated = await Article.findByIdAndUpdate(
+        req.params.id,
+        { $pull: { likes: identifier } },
+        { new: true }
+      );
+    } else {
+      updated = await Article.findByIdAndUpdate(
+        req.params.id,
+        { $addToSet: { likes: identifier } },
+        { new: true }
+      );
+    }
+    const updatedLikes = (updated && updated.likes) ? updated.likes : [];
+    res.json({
+      success: true,
+      hasLiked: !hasLiked,
+      likesCount: updatedLikes.length,
+      likes: updatedLikes
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ================= SHARE ARTICLE =================
+export const shareArticle = async (req, res) => {
+  try {
+    const updated = await Article.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { sharesCount: 1 } },
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+    res.json({
+      success: true,
+      sharesCount: updated.sharesCount || 0
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
