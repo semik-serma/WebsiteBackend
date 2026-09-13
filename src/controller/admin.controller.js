@@ -30,8 +30,11 @@ export const getAllUsers = async (req, res) => {
 export const deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
+        if (req.user && req.user._id && req.user._id.toString() === id) {
+            return res.status(400).json({ success: false, message: 'You cannot delete your own admin account' });
+        }
         const user = await User.findById(id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         await Reel.deleteMany({ user: id });
         await Article.deleteMany({ author: user.email });
@@ -43,9 +46,48 @@ export const deleteUser = async (req, res) => {
         await Notification.deleteMany({ user: id });
         await User.findByIdAndDelete(id);
 
-        res.json({ message: 'User and all associated data deleted successfully' });
+        res.json({ success: true, message: 'User and all associated data deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting user', error: error.message });
+        res.status(500).json({ success: false, message: 'Error deleting user', error: error.message });
+    }
+};
+
+export const updateUserRole = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { role } = req.body;
+
+        if (!role || !['ADMIN', 'USER'].includes(role.toUpperCase())) {
+            return res.status(400).json({ success: false, message: "Invalid role. Role must be 'ADMIN' or 'USER'" });
+        }
+
+        const normalizedRole = role.toUpperCase();
+
+        if (req.user && req.user._id && req.user._id.toString() === id && normalizedRole === 'USER') {
+            return res.status(400).json({ success: false, message: 'You cannot demote your own admin account' });
+        }
+
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        user.role = normalizedRole;
+        await user.save();
+
+        res.json({
+            success: true,
+            message: `User ${user.email} role updated to ${normalizedRole}`,
+            user: {
+                _id: user._id,
+                email: user.email,
+                role: user.role,
+                firstname: user.firstname,
+                lastname: user.lastname
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Error updating user role', error: error.message });
     }
 };
 
@@ -62,10 +104,10 @@ export const deleteReel = async (req, res) => {
     try {
         const { id } = req.params;
         const reel = await Reel.findByIdAndDelete(id);
-        if (!reel) return res.status(404).json({ message: 'Reel not found' });
-        res.json({ message: 'Reel deleted successfully' });
+        if (!reel) return res.status(404).json({ success: false, message: 'Reel not found' });
+        res.json({ success: true, message: 'Reel deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting reel', error: error.message });
+        res.status(500).json({ success: false, message: 'Error deleting reel', error: error.message });
     }
 };
 
@@ -82,9 +124,9 @@ export const deleteArticle = async (req, res) => {
     try {
         const { id } = req.params;
         const article = await Article.findByIdAndDelete(id);
-        if (!article) return res.status(404).json({ message: 'Article not found' });
-        res.json({ message: 'Article deleted successfully' });
+        if (!article) return res.status(404).json({ success: false, message: 'Article not found' });
+        res.json({ success: true, message: 'Article deleted successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error deleting article', error: error.message });
+        res.status(500).json({ success: false, message: 'Error deleting article', error: error.message });
     }
 };

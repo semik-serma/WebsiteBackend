@@ -5,6 +5,7 @@ import {
     getDashboardStats,
     getAllUsers,
     deleteUser,
+    updateUserRole,
     getAllReels,
     deleteReel,
     getAllArticles,
@@ -25,6 +26,8 @@ router.use(authenticate, requireAdmin);
 router.get('/stats', getDashboardStats);
 router.get('/users', getAllUsers);
 router.delete('/users/:id', deleteUser);
+router.patch('/users/:id/role', updateUserRole);
+router.put('/users/:id/role', updateUserRole);
 router.get('/reels', getAllReels);
 router.delete('/reels/:id', deleteReel);
 router.get('/articles', getAllArticles);
