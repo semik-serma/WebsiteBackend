@@ -1,5 +1,5 @@
 import express from 'express'
-import { login, logout, registerSecond, verifyuser } from '../controller/auth.controller.js'
+import { login, logout, registerSecond, verifyuser, getGoogleAuthUrl, googleAuthCallback } from '../controller/auth.controller.js'
 
 
 
@@ -10,6 +10,10 @@ route.post('/verifyuser', verifyuser)
 
 route.post('/loginuser', login)
 route.get('/logout', logout)
+
+// Google OAuth routes
+route.get('/google/url', getGoogleAuthUrl)
+route.post('/google/callback', googleAuthCallback)
 
 
 export default route
