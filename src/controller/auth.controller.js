@@ -8,6 +8,24 @@ import { sendmail } from "../utils/mailer.js";
 import { errorResponse, successResponse } from "../utils/response.js";
 import bcrypt from 'bcrypt'
 import axios from 'axios'
+import dotenv from 'dotenv'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const envPath = path.resolve(__dirname, '../../.env')
+
+function ensureGoogleEnv() {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        if (fs.existsSync(envPath)) {
+            dotenv.config({ path: envPath, override: true })
+        } else {
+            dotenv.config({ override: true })
+        }
+    }
+}
 
 // export const register = async (req, res) => {
 //     try {
@@ -181,6 +199,7 @@ export const logout = async (req, res) => {
  */
 export const getGoogleAuthUrl = async (req, res) => {
     try {
+        ensureGoogleEnv();
         const clientId = process.env.GOOGLE_CLIENT_ID;
         if (!clientId) {
             return errorResponse(res, 'GOOGLE_CLIENT_ID is not configured in backend .env', 500);
@@ -210,6 +229,7 @@ export const getGoogleAuthUrl = async (req, res) => {
  */
 export const googleAuthCallback = async (req, res) => {
     try {
+        ensureGoogleEnv();
         const { code, redirectUri } = req.body;
         if (!code) {
             return errorResponse(res, 'Authorization code is required', 400);
