@@ -41,9 +41,28 @@ process.on('unhandledRejection', (reason, promise) => {
 const app=express()
 app.set('trust proxy', true)
 app.use(express.json())
-app.use(cors({origin:['http://localhost:2000','https://semik.phidimservice.com.np'],credentials:true}))
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:2000',
+  'https://frontend-mu.vercel.app',
+  'https://semikdev.com',
+  'https://www.semikdev.com',
+  'https://semik.phidimservice.com.np',
+  'https://portfolio.phidimservice.com.np'
+];
 
-app.use(cors({origin:['http://localhost:3000','http://localhost:3001','http://localhost:3002','https://frontend-mu.vercel.app','https://semikdev.com','https://www.semikdev.com','https://semik.phidimservice.com.np'],credentials:true}))
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
+  credentials: true
+}));
 
 // Connect Database & Start Auto Backup Engine
 connectdb().then(() => {
