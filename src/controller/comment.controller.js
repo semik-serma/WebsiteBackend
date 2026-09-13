@@ -265,3 +265,176 @@ export const incrementView = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+/**
+ * Add a reply to a Comment
+ */
+export const replyToComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { comment, userEmail, userName, userAvatar } = req.body;
+
+    if (!comment || comment.trim() === '') {
+      return res.status(400).json({ success: false, message: "Reply text is required" });
+    }
+
+    const parentComment = await Comment.findById(id);
+    if (!parentComment) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
+    }
+
+    const newReply = {
+      comment: comment.trim(),
+      userEmail: userEmail || '',
+      userName: userName || userEmail?.split('@')[0] || 'Anonymous',
+      userAvatar: userAvatar || '',
+      likes: [],
+      createdAt: new Date()
+    };
+
+    parentComment.replies.push(newReply);
+    await parentComment.save();
+
+    res.status(201).json({ success: true, message: "Reply added successfully", data: parentComment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to add reply", error: error.message });
+  }
+};
+
+/**
+ * Like/unlike a reply on a Comment
+ */
+export const likeCommentReply = async (req, res) => {
+  try {
+    const { id, replyId } = req.params;
+    const { userEmail } = req.body;
+
+    if (!userEmail) {
+      return res.status(400).json({ success: false, message: "User email required" });
+    }
+
+    const parentComment = await Comment.findById(id);
+    if (!parentComment) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
+    }
+
+    const reply = parentComment.replies.id(replyId);
+    if (!reply) {
+      return res.status(404).json({ success: false, message: "Reply not found" });
+    }
+
+    const likedIndex = reply.likes.indexOf(userEmail);
+    if (likedIndex > -1) {
+      reply.likes.splice(likedIndex, 1);
+    } else {
+      reply.likes.push(userEmail);
+    }
+
+    await parentComment.save();
+    res.status(200).json({ success: true, message: "Reply like toggled", data: parentComment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to toggle reply like", error: error.message });
+  }
+};
+
+/**
+ * Increment share counter on a Comment
+ */
+export const shareComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const comment = await Comment.findByIdAndUpdate(
+      id,
+      { $inc: { shares: 1 } },
+      { new: true }
+    );
+    if (!comment) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
+    }
+    res.status(200).json({ success: true, message: "Comment shared", data: comment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to record share", error: error.message });
+  }
+};
+
+/**
+ * Add a reply to AfterLoginComment
+ */
+export const replyToAfterLoginComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { comment, user } = req.body;
+
+    if (!comment || comment.trim() === '') {
+      return res.status(400).json({ success: false, message: "Reply text is required" });
+    }
+
+    const parentComment = await AfterLoginComment.findById(id);
+    if (!parentComment) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
+    }
+
+    parentComment.replies.push({
+      comment: comment.trim(),
+      user: user || 'Anonymous',
+      likes: [],
+      createdAt: new Date()
+    });
+
+    await parentComment.save();
+    res.status(201).json({ success: true, message: "Reply added", data: parentComment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to add reply", error: error.message });
+  }
+};
+
+/**
+ * Like/unlike an AfterLoginComment
+ */
+export const likeAfterLoginComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userIdentifier = req.body.userEmail || req.body.user;
+
+    if (!userIdentifier) {
+      return res.status(400).json({ success: false, message: "User or user email required" });
+    }
+
+    const comment = await AfterLoginComment.findById(id);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
+    }
+
+    const likedIndex = comment.likes.indexOf(userIdentifier);
+    if (likedIndex > -1) {
+      comment.likes.splice(likedIndex, 1);
+    } else {
+      comment.likes.push(userIdentifier);
+    }
+
+    await comment.save();
+    res.status(200).json({ success: true, message: "Like toggled", data: comment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to toggle like", error: error.message });
+  }
+};
+
+/**
+ * Share an AfterLoginComment
+ */
+export const shareAfterLoginComment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const comment = await AfterLoginComment.findByIdAndUpdate(
+      id,
+      { $inc: { shares: 1 } },
+      { new: true }
+    );
+    if (!comment) {
+      return res.status(404).json({ success: false, message: "Comment not found" });
+    }
+    res.status(200).json({ success: true, message: "Comment shared", data: comment });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Failed to record share", error: error.message });
+  }
+};
